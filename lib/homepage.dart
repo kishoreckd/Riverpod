@@ -1,46 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:spi/provider/todo_provider.dart';
+import 'package:spi/models/user_model.dart';
+import 'package:spi/provider/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+// /**Riverpod */
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  @override
-  void initState() {
-    // TODO: implement initState
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      Provider.of<TodoProvider>(context, listen: false).getAllTodos();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('ProviderAPI'),
-      ),
-      body: Consumer<TodoProvider>(builder: ((context, value, child) {
-        return ListView.builder(itemBuilder: (context, index) {
-          final todo = todos[index];
-          return ListTile(
-            leading: CircleAvatar(
-              child: Text(todo.id.toString()),
-            ),
-            title: Text(todo.title),
-          );
-        });
-      })),
-    );
-  }
-}
-
-/**Riverpod */
 // final Provider = StateProvider<int>((ref) {
 //   return 0;
 // });
@@ -75,3 +39,49 @@ class _HomePageState extends State<HomePage> {
 //     );
 //   }
 // }
+
+class Homepage extends ConsumerWidget {
+  @override
+  const Homepage({super.key});
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final data = ref.watch(UserDataProvider);
+    print(data);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('RiverPod'),
+      ),
+      body: data.when(
+          data: (data) {
+            List<UserModel> userList = data.map((e) => e).toList();
+            print(userList);
+            return Column(
+              children: [
+                Expanded(
+                    child: ListView.builder(
+                  itemBuilder: (_, index) {
+                    return Card(
+                      color: Color.fromARGB(255, 16, 100, 169),
+                      elevation: 4,
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      child: ListTile(
+                        title: Text(
+                          userList[index].firstname,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    );
+                  },
+                  itemCount: userList.length,
+                ))
+              ],
+            );
+          },
+          error: (err, s) => Text(err.toString()),
+          loading: () => const Center(
+                child: CircularProgressIndicator(),
+              )),
+    );
+  }
+}
